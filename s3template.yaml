@@ -5,7 +5,7 @@ Resources:
   MyS3Bucket:
     Type: AWS::S3::Bucket
     Properties:
-      BucketName: s3templatebucket  # Change to a unique name
+      BucketName: s3codepipelinebucket  # Change to a unique name
 
 Outputs:
   BucketName:
