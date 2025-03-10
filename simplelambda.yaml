@@ -11,7 +11,7 @@ Resources:
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
         S3Bucket: !Sub 'my-codepipeline-artifacts-${AWS::AccountId}'
-        S3Key: "BuildOutput/lambda-code.zip"
+        S3Key: "lambda-code.zip"
       Description: "A simple Lambda function"
       Timeout: 10
 
