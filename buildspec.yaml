@@ -1,0 +1,17 @@
+version: 0.2
+
+phases:
+  install:
+    runtime-versions:
+      python: 3.9
+
+  build:
+    commands:
+      - echo "Zipping Lambda function..."
+      - zip -r lambda-code.zip lambda_function.py
+      - echo "Build complete."
+
+artifacts:
+  files:
+    - lambda-code.zip
+    - simplelambda.yaml  # Ensures CloudFormation template is available for deployment
