@@ -7,11 +7,14 @@ phases:
 
   build:
     commands:
+      - echo "Listing files in the current directory"
+      - ls -la  # Debugging step to check if lambda_function.py exists
       - echo "Zipping Lambda function..."
       - zip -r lambda-code.zip lambda_function.py
-      - echo "Build complete."
+      - echo "Uploading to S3..."
+      - aws s3 cp lambda-code.zip s3://my-lambda-code-$(aws sts get-caller-identity --query Account --output text)/
 
 artifacts:
   files:
     - lambda-code.zip
-    - simplelambda.yaml  # Ensures CloudFormation template is available for deployment
+    - simplelambda.yaml
