@@ -10,7 +10,7 @@ phases:
       - echo "Fetching AWS Account ID..."
       - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
       - S3_BUCKET="my-codepipeline-artifacts-${ACCOUNT_ID}"
-      - echo "Using S3 Bucket: $S3_BUCKET"
+      #- echo "Using S3 Bucket: $S3_BUCKET"
 
       - echo "Zipping Lambda function code..."
       - zip -r lambda-code.zip lambda_function.py
