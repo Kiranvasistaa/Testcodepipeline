@@ -13,7 +13,7 @@ phases:
       - echo "Using S3 Bucket: $S3_BUCKET"
 
       - echo "Zipping Lambda function code..."
-      - zip -r lambda-code.zip lambda_function.py || { echo "Failed to zip files"; exit 1; }
+      - zip -r lambda-code.zip lambda_function.py
 
       - echo "Uploading Lambda package to S3 artifact bucket..."
       - aws s3 cp lambda-code.zip s3://$S3_BUCKET/
