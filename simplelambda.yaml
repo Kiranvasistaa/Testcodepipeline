@@ -10,8 +10,8 @@ Resources:
       Handler: "lambda_function.lambda_handler"
       Role: !GetAtt LambdaExecutionRole.Arn
       Code:
-        S3Bucket: !Ref LambdaS3Bucket
-        S3Key: "lambda-code.zip"
+        S3Bucket: !Sub 'my-codepipeline-artifacts-${AWS::AccountId}'
+        S3Key: "BuildOutput/lambda-code.zip"
       Description: "A simple Lambda function"
       Timeout: 10
 
@@ -39,10 +39,10 @@ Resources:
                   - logs:PutLogEvents
                 Resource: "*"
 
-  LambdaS3Bucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub 'my-lambda-code-${AWS::AccountId}'
+  # LambdaS3Bucket:
+  #   Type: AWS::S3::Bucket
+  #   Properties:
+  #     BucketName: !Sub 'my-lambda-code-${AWS::AccountId}'
 
 Outputs:
   LambdaFunctionArn:
