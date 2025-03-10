@@ -7,12 +7,16 @@ phases:
 
   build:
     commands:
-      - echo "Listing files in the current directory"
-      - ls -la  # Debugging step to check if lambda_function.py exists
-      - echo "Zipping Lambda function..."
-      - zip -r lambda-code.zip lambda_function.py
-      - echo "Uploading to S3..."
-      - aws s3 cp lambda-code.zip s3://my-lambda-code-$(aws sts get-caller-identity --query Account --output text)/
+      - echo "Fetching AWS Account ID..."
+      - ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+      - S3_BUCKET="my-codepipeline-artifacts-${ACCOUNT_ID}"
+      - echo "Using S3 Bucket: $S3_BUCKET"
+      
+      - echo "Zipping Lambda function code..."
+      - zip -r lambda-code.zip lambda_function.py || { echo "Failed to zip files"; exit 1; }
+
+      - echo "Uploading Lambda package to S3 artifact bucket..."
+      - aws s3 cp lambda-code.zip s3://$S3_BUCKET/
 
 artifacts:
   files:
