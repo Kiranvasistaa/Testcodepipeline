@@ -94,7 +94,7 @@ Resources:
   StepFunction:
     Type: AWS::StepFunctions::StateMachine
     Properties:
-      StateMachineName: "DynamoDBBackupRestoration"
+      StateMachineName: "OPSDynamoDBBackupRestoration"
       RoleArn: !GetAtt StepFunctionRole.Arn
       DefinitionString: !Sub |
         {

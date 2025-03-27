@@ -21,13 +21,13 @@ Parameters:
     Default: cloudops-codepipeline-role
   GitHubOwner:
     Type: String
-    Default: jayasriruben
+    Default: Kiranvasistaa
   RepoBranchName: 
     Type: String
-    Default: main
+    Default: dbrestore
   RepoName:
     Type: String
-    Default: dynamodb-pipeline
+    Default: Testcodepipeline
   GitHubOAuthToken: 
     Type: String
     Default: token
@@ -357,7 +357,7 @@ Resources:
 
         - Name: Deploy_SDLC
           Actions:
-            - Name: Deploy-Lambda
+            - Name: Deploy-Glue
               InputArtifacts:
                 - Name: Source-Artifacts
               OutputArtifacts: []
@@ -371,7 +371,7 @@ Resources:
                 Capabilities: "CAPABILITY_IAM,CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND"
                 RoleArn:  !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCFTRoleName}
                 StackName: !Sub ${TeamName}-glue
-                TemplatePath: "Source-Artifacts::iac/cft/lambda.yaml"
+                TemplatePath: "Source-Artifacts::iac/cft/lambdagluejob.yaml"
                 TemplateConfiguration: !Sub "Source-Artifacts::iac/environment/lambda.json"
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
               RunOrder: 1
@@ -390,7 +390,7 @@ Resources:
                 Capabilities: "CAPABILITY_IAM,CAPABILITY_NAMED_IAM,CAPABILITY_AUTO_EXPAND"
                 RoleArn:  !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCFTRoleName}
                 StackName: !Sub ${TeamName}-stepfunction
-                TemplatePath: "Source-Artifacts::iac/cft/stepfunction.yaml"
+                TemplatePath: "Source-Artifacts::iac/cft/stepfunctiongluejob.yaml"
                 TemplateConfiguration: !Sub "Source-Artifacts::iac/environment/stepfunction.json"
               RoleArn: !Sub arn:aws:iam::${AWS::AccountId}:role/${DBCodeDeployRoleName}
               # Namespace: "stepfunction"
