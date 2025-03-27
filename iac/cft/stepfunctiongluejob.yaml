@@ -105,7 +105,7 @@ Resources:
               "Type": "Task",
               "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}",
               "Parameters": {
-                "table_name.$": "$.table_name"
+                "table_name.$": "$.tablename"
               },
               "ResultPath": "$.backup",
               "Next": "RestoreBackup"
@@ -114,7 +114,7 @@ Resources:
               "Type": "Task",
               "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
               "Parameters": {
-                "table_name.$": "$.table_name",
+                "table_name.$": "$.tablename",
                 "backup_arn.$": "$.backup.latest_backup_arn"
               },
               "ResultPath": "$.restore",
@@ -196,7 +196,7 @@ Resources:
               "Parameters": {
                 "JobName": "${DeleteDynamoDBDataGlueJobName}",
                 "Arguments": {
-                  "--DYNAMODB_TABLE.$": "$.table_name"
+                  "--DYNAMODB_TABLE.$": "$.tablename"
                 }
               },
               "ResultPath": "$.delete",
@@ -244,7 +244,7 @@ Resources:
               "Parameters": {
                 "JobName": "${ImportS3ToDynamoDBGlueJobName}",
                 "Arguments": {
-                  "--DYNAMODB_TABLE.$": "$.table_name",
+                  "--DYNAMODB_TABLE.$": "$.tablename",
                   "--S3_BUCKET": "${DynamoDBBucketName}",
                   "--S3_KEY.$": "$.restore.file_name"
                 }
