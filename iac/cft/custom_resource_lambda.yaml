@@ -6,7 +6,7 @@ Description: >
   - A custom resource to invoke the Lambda function with necessary parameters
 
 Parameters:
-  table_name:
+  tablename:
     Type: String
     Description: "The name of the DynamoDB table that the Lambda function will interact with"
     
@@ -106,7 +106,7 @@ Resources:
                           response = sfn_client.start_execution(
                               stateMachineArn=step_function_arn,
                               input=json.dumps({
-                                  'table_name': table_name,
+                                  'tablename': table_name,
                                   'timestamp': timestamp
                               })
                           )
@@ -149,7 +149,7 @@ Resources:
         - !Ref 'AWS::AccountId'
         - ':function:'
         - !Ref CustomResourceLambdaFunctionName
-      TableName: !Ref table_name
+      TableName: !Ref tablename
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
 
