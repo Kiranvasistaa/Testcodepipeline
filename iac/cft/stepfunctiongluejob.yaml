@@ -135,14 +135,14 @@ Resources:
                     "Parameters": {
                         "restored_table_name.$": "$.restore.restore_table_name"
                     },
-                    "ResultPath": "$.RestoreStatus",
+                    "ResultPath": "$.restoreStatus",
                     "Next": "IsTableActive"
                   },
                   "IsTableActive": {
                     "Type": "Choice",
                     "Choices": [
                       {
-                        "Variable": "$.RestoreStatus.status",
+                        "Variable": "$.restoreStatus.status",
                         "StringEquals": "ACTIVE",
                         "Next": "IteratorSucceed"
                       }
