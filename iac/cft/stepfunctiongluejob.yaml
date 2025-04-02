@@ -153,7 +153,7 @@ Resources:
                     {
                       "Variable": "$.RestoreStatus.status",
                       "StringEquals": "ACTIVE",
-                      "Next": "SucceedState"
+                      "Next": "IteratorSucceed"
                     }
                   ],
                   "Default": "WaitBeforeRetry"
@@ -163,7 +163,7 @@ Resources:
                   "Seconds": 60,
                   "Next": "CheckRestoreStatus"
                 },
-                "SucceedState": {
+                "IteratorSucceed": {
                   "Type": "Succeed"
                 }
               }
@@ -313,14 +313,14 @@ Resources:
               }
             },
             "ResultPath": "$.deleteTableResult",
-            "Next": "SucceedState"
+            "Next": "FinalSucceedState"
           },
           "FailState": {
             "Type": "Fail",
             "Error": "ProcessFailed",
             "Cause": "An error occurred during the process."
           },
-          "SucceedState": {
+          "FinalSucceedState": {
             "Type": "Succeed"
           }
         }
