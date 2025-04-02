@@ -245,8 +245,9 @@ Resources:
                       "statusCode": 200,
                       "body": f"Backup restored successfully to {new_table_name}",
                       "restore_table_arn": response['TableDescription']['TableArn'],
-                "restore_table_name": new_table_name,
-                "file_name": file_name
+                      "restore_table_name": new_table_name,
+                      "file_name": file_name,
+                      "backup_arn": backup_arn
                   }
 
               except Exception as e:

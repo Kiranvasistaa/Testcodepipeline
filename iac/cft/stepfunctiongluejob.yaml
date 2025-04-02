@@ -142,7 +142,7 @@ Resources:
                     "Type": "Choice",
                     "Choices": [
                       {
-                        "Variable": "$.restoreStatus.status",
+                        "Variable": "$.restoreStatus.statusCode",
                         "StringEquals": "ACTIVE",
                         "Next": "IteratorSucceed"
                       }
