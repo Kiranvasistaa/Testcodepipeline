@@ -177,7 +177,7 @@ Resources:
                       }
                     }
                   }
-                }
+                },
                 "ResultPath": "$.export",
                 "Next": "WaitForExportJob"
                 },
