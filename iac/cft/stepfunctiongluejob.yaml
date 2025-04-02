@@ -155,19 +155,32 @@ Resources:
                     "Next": "CheckRestoreStatus"
                   },
                   "ExportToS3": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::glue:startJobRun",
-                    "Parameters": {
-                      "JobName": "${ExportToS3GlueJobName}",
-                      "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.restore.restore_table_name",
-                        "--S3_BUCKET": "${DynamoDBBucketName}",
-                        "--FILE_NAME.$": "$.restore.file_name"
+                  "Type": "Map",
+                  "ItemsPath": "$.restore.tables",
+                  "MaxConcurrency": 1,  
+                  "Iterator": {
+                    "StartAt": "StartGlueJob",
+                    "States": {
+                      "StartGlueJob": {
+                        "Type": "Task",
+                        "Resource": "arn:aws:states:::glue:startJobRun",
+                        "Parameters": {
+                          "JobName": "${ExportToS3GlueJobName}",
+                          "Arguments": {
+                            "--DYNAMODB_TABLE.$": "$.restore.restore_table_name",
+                            "--S3_BUCKET": "${DynamoDBBucketName}",
+                            "--FILE_NAME.$": "$.restore.file_name"
+                          }
+                        },
+                        "ResultPath": "$.export",
+                        "Next": "WaitForExportJob"
                       }
-                    },
-                    "ResultPath": "$.export",
-                    "Next": "WaitForExportJob"
-                  },
+                    }
+                  }
+                }
+                "ResultPath": "$.export",
+                "Next": "WaitForExportJob"
+                },
                   "WaitForExportJob": {
                     "Type": "Wait",
                     "Seconds": 30,
