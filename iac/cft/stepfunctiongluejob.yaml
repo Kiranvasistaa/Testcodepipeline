@@ -174,155 +174,149 @@ Resources:
                         },
                         "ResultPath": "$.export",
                         "Next": "WaitForExportJob"
-                      }
+                        },
+                        "WaitForExportJob": {
+                            "Type": "Wait",
+                            "Seconds": 30,
+                            "Next": "CheckExportJobStatus"
+                          },
+                          "CheckExportJobStatus": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::aws-sdk:glue:getJobRun",
+                            "Parameters": {
+                              "JobName": "${ExportToS3GlueJobName}",
+                              "RunId.$": "$.export.JobRunId"
+                            },
+                            "ResultPath": "$.jobStatus",
+                            "Next": "ExportJobStatusChoice"
+                          },
+                          "ExportJobStatusChoice": {
+                            "Type": "Choice",
+                            "Choices": [
+                              {
+                                "Variable": "$.jobStatus.JobRun.JobRunState",
+                                "StringEquals": "SUCCEEDED",
+                                "Next": "DeleteDynamoDBData"
+                              },
+                              {
+                                "Variable": "$.jobStatus.JobRun.JobRunState",
+                                "StringEquals": "FAILED",
+                                "Next": "FailState"
+                              }
+                            ],
+                            "Default": "WaitForExportJob"
+                          },
+                          "DeleteDynamoDBData": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::glue:startJobRun",
+                            "Parameters": {
+                              "JobName": "${DeleteDynamoDBDataGlueJobName}",
+                              "Arguments": {
+                                "--DYNAMODB_TABLE.$": "$.TABLE_NAME"
+                              }
+                            },
+                            "ResultPath": "$.delete",
+                            "Next": "WaitForDeleteJobCompletion"
+                          },
+                          "WaitForDeleteJobCompletion": {
+                            "Type": "Wait",
+                            "Seconds": 30,
+                            "Next": "GetDeleteJobStatus"
+                          },
+                          "GetDeleteJobStatus": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::aws-sdk:glue:getJobRun",
+                            "Parameters": {
+                              "JobName": "${DeleteDynamoDBDataGlueJobName}",
+                              "RunId.$": "$.delete.JobRunId"
+                            },
+                            "ResultPath": "$.delete.Status",
+                            "Next": "CheckDeleteJobStatus"
+                          },
+                          "CheckDeleteJobStatus": {
+                            "Type": "Choice",
+                            "Choices": [
+                              {
+                                "Variable": "$.delete.Status.JobRun.JobRunState",
+                                "StringEquals": "SUCCEEDED",
+                                "Next": "ImportS3ToDynamoDB"
+                              },
+                              {
+                                "Variable": "$.delete.Status.JobRun.JobRunState",
+                                "StringEquals": "FAILED",
+                                "Next": "FailState"
+                              }
+                            ],
+                            "Default": "WaitForDeleteJobCompletion"
+                          },
+                          "ImportS3ToDynamoDB": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::glue:startJobRun",
+                            "Parameters": {
+                              "JobName": "${ImportS3ToDynamoDBGlueJobName}",
+                              "Arguments": {
+                                "--DYNAMODB_TABLE.$": "$.TABLE_NAME",
+                                "--S3_BUCKET": "${DynamoDBBucketName}",
+                                "--S3_KEY.$": "$.export.JobRunId"
+                              }
+                            },
+                            "ResultPath": "$.import",
+                            "Next": "WaitForImportJobCompletion"
+                          },
+                          "WaitForImportJobCompletion": {
+                            "Type": "Wait",
+                            "Seconds": 60,
+                            "Next": "GetImportJobStatus"
+                          },
+                          "GetImportJobStatus": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:states:::aws-sdk:glue:getJobRun",
+                            "Parameters": {
+                              "JobName": "${ImportS3ToDynamoDBGlueJobName}",
+                              "RunId.$": "$.import.JobRunId"
+                            },
+                            "ResultPath": "$.import.Status",
+                            "Next": "CheckImportJobStatus"
+                          },
+                          "CheckImportJobStatus": {
+                            "Type": "Choice",
+                            "Choices": [
+                              {
+                                "Variable": "$.import.Status.JobRun.JobRunState",
+                                "StringEquals": "SUCCEEDED",
+                                "Next": "DeleteDynamoDBTable"
+                              },
+                              {
+                                "Variable": "$.import.Status.JobRun.JobRunState",
+                                "StringEquals": "FAILED",
+                                "Next": "FailState"
+                              }
+                            ],
+                            "Default": "WaitForImportJobCompletion"
+                          },
+                          "DeleteDynamoDBTable": {
+                            "Type": "Task",
+                            "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBTableFunctionName}",
+                            "Parameters": {
+                                "table_name.$": "$.restore.restore_table_name"
+                            },
+                            "ResultPath": "$.deleteTableResult",
+                            "Next": "SucceedState"
+                          },
+                          "FailState": {
+                            "Type": "Fail",
+                            "Error": "ProcessFailed",
+                            "Cause": "An error occurred during the process."
+                          },
+                          "SucceedState": {
+                            "Type": "Succeed"
+                          }
+                        }
+                      },
+                      "End": true
                     }
                   }
-                },
-                "ResultPath": "$.export",
-                "Next": "WaitForExportJob"
-                },
-                  "WaitForExportJob": {
-                    "Type": "Wait",
-                    "Seconds": 30,
-                    "Next": "CheckExportJobStatus"
-                  },
-                  "CheckExportJobStatus": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::aws-sdk:glue:getJobRun",
-                    "Parameters": {
-                      "JobName": "${ExportToS3GlueJobName}",
-                      "RunId.$": "$.export.JobRunId"
-                    },
-                    "ResultPath": "$.jobStatus",
-                    "Next": "ExportJobStatusChoice"
-                  },
-                  "ExportJobStatusChoice": {
-                    "Type": "Choice",
-                    "Choices": [
-                      {
-                        "Variable": "$.jobStatus.JobRun.JobRunState",
-                        "StringEquals": "SUCCEEDED",
-                        "Next": "DeleteDynamoDBData"
-                      },
-                      {
-                        "Variable": "$.jobStatus.JobRun.JobRunState",
-                        "StringEquals": "FAILED",
-                        "Next": "FailState"
-                      }
-                    ],
-                    "Default": "WaitForExportJob"
-                  },
-                  "DeleteDynamoDBData": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::glue:startJobRun",
-                    "Parameters": {
-                      "JobName": "${DeleteDynamoDBDataGlueJobName}",
-                      "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME"
-                      }
-                    },
-                    "ResultPath": "$.delete",
-                    "Next": "WaitForDeleteJobCompletion"
-                  },
-                  "WaitForDeleteJobCompletion": {
-                    "Type": "Wait",
-                    "Seconds": 30,
-                    "Next": "GetDeleteJobStatus"
-                  },
-                  "GetDeleteJobStatus": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::aws-sdk:glue:getJobRun",
-                    "Parameters": {
-                      "JobName": "${DeleteDynamoDBDataGlueJobName}",
-                      "RunId.$": "$.delete.JobRunId"
-                    },
-                    "ResultPath": "$.delete.Status",
-                    "Next": "CheckDeleteJobStatus"
-                  },
-                  "CheckDeleteJobStatus": {
-                    "Type": "Choice",
-                    "Choices": [
-                      {
-                        "Variable": "$.delete.Status.JobRun.JobRunState",
-                        "StringEquals": "SUCCEEDED",
-                        "Next": "ImportS3ToDynamoDB"
-                      },
-                      {
-                        "Variable": "$.delete.Status.JobRun.JobRunState",
-                        "StringEquals": "FAILED",
-                        "Next": "FailState"
-                      }
-                    ],
-                    "Default": "WaitForDeleteJobCompletion"
-                  },
-                  "ImportS3ToDynamoDB": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::glue:startJobRun",
-                    "Parameters": {
-                      "JobName": "${ImportS3ToDynamoDBGlueJobName}",
-                      "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME",
-                        "--S3_BUCKET": "${DynamoDBBucketName}",
-                        "--S3_KEY.$": "$.export.JobRunId"
-                      }
-                    },
-                    "ResultPath": "$.import",
-                    "Next": "WaitForImportJobCompletion"
-                  },
-                  "WaitForImportJobCompletion": {
-                    "Type": "Wait",
-                    "Seconds": 60,
-                    "Next": "GetImportJobStatus"
-                  },
-                  "GetImportJobStatus": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:states:::aws-sdk:glue:getJobRun",
-                    "Parameters": {
-                      "JobName": "${ImportS3ToDynamoDBGlueJobName}",
-                      "RunId.$": "$.import.JobRunId"
-                    },
-                    "ResultPath": "$.import.Status",
-                    "Next": "CheckImportJobStatus"
-                  },
-                  "CheckImportJobStatus": {
-                    "Type": "Choice",
-                    "Choices": [
-                      {
-                        "Variable": "$.import.Status.JobRun.JobRunState",
-                        "StringEquals": "SUCCEEDED",
-                        "Next": "DeleteDynamoDBTable"
-                      },
-                      {
-                        "Variable": "$.import.Status.JobRun.JobRunState",
-                        "StringEquals": "FAILED",
-                        "Next": "FailState"
-                      }
-                    ],
-                    "Default": "WaitForImportJobCompletion"
-                  },
-                  "DeleteDynamoDBTable": {
-                    "Type": "Task",
-                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBTableFunctionName}",
-                    "Parameters": {
-                        "table_name.$": "$.restore.restore_table_name"
-                    },
-                    "ResultPath": "$.deleteTableResult",
-                    "Next": "SucceedState"
-                  },
-                  "FailState": {
-                    "Type": "Fail",
-                    "Error": "ProcessFailed",
-                    "Cause": "An error occurred during the process."
-                  },
-                  "SucceedState": {
-                    "Type": "Succeed"
-                  }
                 }
-              },
-              "End": true
-            }
-          }
-        }
 
 Outputs:
   StepFunctionRoleArn:
