@@ -112,37 +112,28 @@ Resources:
                 "States": {
                   "FindLatestBackupforTable": {
                     "Type": "Task",
-                    "Resource": "arn:aws:states:::lambda:invoke",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}",
                     "Parameters": {
-                      "FunctionName": "${FindLatestBackupFunctionName}",
-                      "Payload": {
                         "table_name.$": "$.TABLE_NAME"
-                      }
                     },
                     "ResultPath": "$.backup",
                     "Next": "RestoreBackup"
                   },
                   "RestoreBackup": {
                     "Type": "Task",
-                    "Resource": "arn:aws:states:::lambda:invoke",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
                     "Parameters": {
-                      "FunctionName": "${RestoreBackupFunctionName}",
-                      "Payload": {
                         "table_name.$": "$.TABLE_NAME",
                         "backup_arn.$": "$.backup.latest_backup_arn"
-                      }
                     },
                     "ResultPath": "$.restore",
                     "Next": "CheckRestoreStatus"
                   },
                   "CheckRestoreStatus": {
                     "Type": "Task",
-                    "Resource": "arn:aws:states:::lambda:invoke",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
                     "Parameters": {
-                      "FunctionName": "${CheckRestoreStatusFunctionName}",
-                      "Payload": {
                         "restored_table_name.$": "$.restore.restore_table_name"
-                      }
                     },
                     "ResultPath": "$.RestoreStatus",
                     "Next": "IsTableActive"
