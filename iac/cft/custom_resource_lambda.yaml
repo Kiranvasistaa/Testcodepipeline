@@ -6,7 +6,7 @@ Description: >
   - A custom resource to invoke the Lambda function with necessary parameters
 
 Parameters:
-  DynamoDBTableNames:
+  table_names:
     Type: CommaDelimitedList
     Description: "The name of the DynamoDB table that the Lambda function will interact with"
     
@@ -99,7 +99,7 @@ Resources:
 
               try:
                   props = event.get('ResourceProperties', {})
-                  table_names = props.get('DynamoDBTableNames', [])  
+                  table_names = props.get('tables', [])  
                   timestamp = props.get('Timestamp', '')
                   step_function_arn = props.get('StepFunctionArn', '')
 
@@ -157,7 +157,7 @@ Resources:
         - !Ref 'AWS::AccountId'
         - ':function:'
         - !Ref CustomResourceLambdaFunctionName
-      DynamoDBTableNames: !Ref DynamoDBTableNames
+      tables: !Ref table_names
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
 
