@@ -205,7 +205,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${DeleteDynamoDBDataGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.tablenames"
+                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME",
                       }
                     },
                     "ResultPath": "$.delete",
@@ -248,7 +248,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${ImportS3ToDynamoDBGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.tablename",
+                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME",
                         "--S3_BUCKET": "${DynamoDBBucketName}",
                         "--S3_KEY.$": "$.restore.file_name"
                       }
