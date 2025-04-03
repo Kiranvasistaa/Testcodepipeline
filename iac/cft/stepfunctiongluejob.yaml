@@ -160,7 +160,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${ExportToS3GlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.backup[0].restore.restore_table_name",
+                        "--DYNAMODB_TABLE.$": "$.restore.restore_table_name",
                         "--S3_BUCKET": "${DynamoDBBucketName}",
                         "--FILE_NAME.$": "$.backup[0].restore.file_name"
                       }
@@ -205,7 +205,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${DeleteDynamoDBDataGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.backup[0].TABLE_NAME"
+                        "--DYNAMODB_TABLE.$": "$.tablename"
                       }
                     },
                     "ResultPath": "$.delete",
@@ -248,9 +248,9 @@ Resources:
                     "Parameters": {
                       "JobName": "${ImportS3ToDynamoDBGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.backup[0].TABLE_NAME",
+                        "--DYNAMODB_TABLE.$": "$.tablename",
                         "--S3_BUCKET": "${DynamoDBBucketName}",
-                        "--S3_KEY.$": "$.backup[0].restore.file_name"
+                        "--S3_KEY.$": "$.restore.file_name"
                       }
                     },
                     "ResultPath": "$.import",
@@ -293,7 +293,7 @@ Resources:
                     "Parameters": {
                       "FunctionName": "${DeleteDynamoDBTableFunctionName}",
                       "Payload": {
-                        "table_name.$": "$.backup[0].restore.restore_table_name"
+                        "table_name.$": "$.restore.restore_table_name"
                       }
                     },
                     "ResultPath": "$.deleteTableResult",
