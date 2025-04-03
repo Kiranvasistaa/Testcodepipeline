@@ -162,7 +162,7 @@ Resources:
                       "Arguments": {
                         "--DYNAMODB_TABLE.$": "$.restore.restore_table_name",
                         "--S3_BUCKET": "${DynamoDBBucketName}",
-                        "--FILE_NAME.$": "$.backup[0].restore.file_name"
+                        "--FILE_NAME.$": "$.restore.file_name"
                       }
                     },
                     "ResultPath": "$.export",
