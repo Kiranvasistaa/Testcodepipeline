@@ -230,7 +230,7 @@ Resources:
 
           def lambda_handler(event, context):
               try:
-                  backup_arn = event['latest_backup_arn']
+                  backup_arn = event['backup_arn']
                   original_table_name = event['table_name']
                   new_table_name = f"{original_table_name}_temp"
 
