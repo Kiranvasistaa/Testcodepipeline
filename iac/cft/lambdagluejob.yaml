@@ -231,7 +231,7 @@ Resources:
           def lambda_handler(event, context):
               try:
                   backup_arn = event['latest_backup_arn']
-                  original_table_name = event.get('table_name')
+                  original_table_name = event['table_name']
                   new_table_name = f"{original_table_name}_temp"
 
                   response = dynamodb.restore_table_from_backup(
@@ -257,8 +257,8 @@ Resources:
                       "body": f"Error restoring backup: {str(e)}"
                   }
 
-      Runtime: "python3.12"
-      Timeout: 900
+          Runtime: "python3.12"
+          Timeout: 900
 
   # Lambda function to check the table status
   CheckRestoreStatusFunction:
