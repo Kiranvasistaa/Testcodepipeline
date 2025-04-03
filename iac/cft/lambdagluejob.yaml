@@ -182,7 +182,7 @@ Resources:
 
           def lambda_handler(event, context):
               try:
-                  table_name = event['table_name']  # Get table name from input event
+                  table_name = event.get('table_name')
 
                   # Get list of backups for the given table
                   response = dynamodb.list_backups(TableName=table_name)
@@ -229,8 +229,8 @@ Resources:
 
           def lambda_handler(event, context):
               try:
-                  backup_arn = event['latest_backup_arn']  
-                  original_table_name = event['table_name']  
+                  backup_arn = event.get('latest_backup_arn')  
+                  original_table_name = event.get('table_name')  
                   new_table_name = f"{original_table_name}_temp"
 
                   # Restore the table from backup
