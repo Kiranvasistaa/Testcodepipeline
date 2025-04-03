@@ -1,14 +1,14 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Description: >
-  - This template creates resources for DynamoDB processing and Step Function execution, including:
+  -  This template creates resources for DynamoDB processing and Step Function execution, including:
   - A Lambda function to trigger the Step Function.
   - An IAM role for Lambda to invoke the Step Function.
   - A custom resource to invoke the Lambda function with necessary parameters
 
 Parameters:
-  tablenames:
+  DynamoDBTableNames:
     Type: CommaDelimitedList
-    Description: "The name(s) of the DynamoDB table(s) that the Lambda function will interact with"
+    Description: "The name of the DynamoDB table that the Lambda function will interact with"
     
   Timestamp:
     Type: String
@@ -26,7 +26,15 @@ Parameters:
     Type: String
     Description: "The name of the IAM role that the Lambda function will assume"
 
+  DynamoDBBucketName:
+    Type: String
+    Description: "name of the s3 bucket"
+
+
+
+    
 Resources:
+
   # IAM Role for Lambda
   LambdaExecutionRole:
     Type: AWS::IAM::Role
@@ -51,7 +59,7 @@ Resources:
                   - states:StartExecution
                 Resource: !Ref StepFunctionArn
   
-  # Lambda Function for Custom Resource
+   # Lambda Function for Custom Resource
   CustomResourceLambdaFunction:
     Type: AWS::Lambda::Function
     Properties:
@@ -89,7 +97,7 @@ Resources:
 
               try:
                   props = event.get('ResourceProperties', {})
-                  table_names = props.get('TableNames', [])  # Expecting a list
+                  table_names = props.get('DynamoDBTableNames', [])  
                   timestamp = props.get('Timestamp', '')
                   step_function_arn = props.get('StepFunctionArn', '')
 
@@ -97,25 +105,25 @@ Resources:
                   response_data = {}
 
                   # Check for Create, Update, or Delete request
-                  if event["RequestType"] in ["Create", "Update"]:
+                  if event["RequestType"] == "Create" or event["RequestType"] == "Update":
                       if table_names:
-                          # Use the first table name from the list (or modify to handle all)
-                          table_name = table_names[0] if isinstance(table_names, list) else table_names
                           # Create Step Functions client
                           sfn_client = boto3.client('stepfunctions')
                           response = sfn_client.start_execution(
                               stateMachineArn=step_function_arn,
                               input=json.dumps({
-                                  'tablenames': table_names,  # Pass the full list to match Step Function expectation
+                                  'DynamoDBTableNames': table_names,
                                   'timestamp': timestamp
                               })
                           )
                           print(f"Step Function execution started successfully: {response['executionArn']}")
                           response_data["ExecutionArn"] = response['executionArn']  
+
+                          # Send success response to CloudFormation
                           send_response(event, context, "SUCCESS", response_data)
                       else:
-                          print("No TableNames provided, skipping Step Function execution.")
-                          response_data["Message"] = "No TableNames provided, skipping execution."
+                          print("No TableName provided, skipping Step Function execution.")
+                          response_data["Message"] = "No TableName provided, skipping execution."
                           send_response(event, context, "SUCCESS", response_data)
 
                   elif event["RequestType"] == "Delete":
@@ -126,24 +134,34 @@ Resources:
               except Exception as e:
                   print(f"Error occurred: {str(e)}")
                   send_response(event, context, "FAILED", {"Message": str(e)})
+
                   return {
                       'statusCode': 500,
-                      'body': json.dumps({'Error': str(e)})
+                      'body': json.dumps({
+                          'Error': str(e)
+                      })
                   }
 
   # Custom Resource for Lambda Execution
   CustomResource:
-    Type: 'Custom::CustomLambdaDynamoDBBackupExecution'
+    Type: 'Custom::CustomLamdaDynamoDBBackupExecution' 
     DependsOn: CustomResourceLambdaFunction
     Properties:
       ServiceToken: !Join
-        - ''
-        - - 'arn:aws:lambda:'
-          - !Ref 'AWS::Region'
-          - ':'
-          - !Ref 'AWS::AccountId'
-          - ':function:'
-          - !Ref CustomResourceLambdaFunctionName
-      TableNames: !Ref tablename
+      - ''
+      - - 'arn:aws:lambda:'
+        - !Ref 'AWS::Region'
+        - ':'
+        - !Ref 'AWS::AccountId'
+        - ':function:'
+        - !Ref CustomResourceLambdaFunctionName
+      DynamoDBTableNames: !Ref DynamoDBTableNames
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
+
+
+
+
+
+
+
