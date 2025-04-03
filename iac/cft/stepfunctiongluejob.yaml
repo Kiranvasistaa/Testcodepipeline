@@ -131,7 +131,7 @@ Resources:
                   },
                   "CheckRestoreStatus": {
                     "Type": "Task",
-                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
+                    "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${CheckRestoreStatusFunctionName}",
                     "Parameters": {
                         "restored_table_name.$": "$.restore.restore_table_name"
                     },
