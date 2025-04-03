@@ -229,9 +229,11 @@ Resources:
           dynamodb = boto3.client('dynamodb')
 
           def lambda_handler(event, context):
+              print("🔍 Received event:", json.dumps(event))
+              
               try:
-                  backup_arn = event['backup_arn']
-                  original_table_name = event['table_name']
+                  backup_arn = event.get('backup_arn')
+                  original_table_name = event.get('table_name')
                   new_table_name = f"{original_table_name}_temp"
 
                   response = dynamodb.restore_table_from_backup(
