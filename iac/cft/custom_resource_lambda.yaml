@@ -144,6 +144,6 @@ Resources:
           - !Ref 'AWS::AccountId'
           - ':function:'
           - !Ref CustomResourceLambdaFunctionName
-      TableNames: !Ref tablenames  
+      TableNames: !Ref tablename
       Timestamp: !Ref Timestamp
       StepFunctionArn: !Ref StepFunctionArn
