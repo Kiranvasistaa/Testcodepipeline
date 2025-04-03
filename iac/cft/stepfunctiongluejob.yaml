@@ -142,7 +142,7 @@ Resources:
                     "Type": "Choice",
                     "Choices": [
                       {
-                        "Variable": "$.restoreStatus.statusCode",
+                        "Variable": "$.restoreStatus.status",
                         "StringEquals": "ACTIVE",
                         "Next": "ExportToS3"
                       }
