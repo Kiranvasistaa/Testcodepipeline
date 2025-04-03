@@ -257,8 +257,8 @@ Resources:
                       "body": f"Error restoring backup: {str(e)}"
                   }
 
-          Runtime: "python3.12"
-          Timeout: 900
+      Runtime: "python3.12"
+      Timeout: 900
 
   # Lambda function to check the table status
   CheckRestoreStatusFunction:
