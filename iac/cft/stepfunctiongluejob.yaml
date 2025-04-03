@@ -124,7 +124,7 @@ Resources:
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
                     "Parameters": {
                         "table_name.$": "$.TABLE_NAME",
-                        "backup_arn.$": "$.backup.backup_arn"
+                        "backup_arn.$": "$.backup.latest_backup_arn"
                     },
                     "ResultPath": "$.restore",
                     "Next": "CheckRestoreStatus"
