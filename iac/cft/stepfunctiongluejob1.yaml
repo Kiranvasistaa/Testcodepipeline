@@ -23,17 +23,17 @@ Parameters:
     
   ExportToS3GlueJobName:
     Type: String
-    Description: "The name of the Glue job to export data to S3. For example: ops-export-dynamodb-to-s3-gluejob"
+    Description: "The name of the Lambda function to export data to S3. For example: ops-export-to-s3"
     Default: "ops-export-dynamodb-to-s3-gluejob"
 
   DeleteDynamoDBDataGlueJobName:
     Type: String
-    Description: "The name of the Glue job to delete the DynamoDB table data. For example: ops-delete-dynamodb-gluejob"
+    Description: "The name of the Lambda function to delete the DynamoDB table. For example: ops-delete-dynamodb-data"
     Default: "ops-delete-dynamodb-gluejob"
 
   ImportS3ToDynamoDBGlueJobName:
     Type: String
-    Description: "The name of the Glue job to import data from S3 to DynamoDB. For example: ops-import-s3-to-dynamodb-gluejob"
+    Description: "The name of the Lambda function to import data from S3 to DynamoDB. For example: ops-imports3-to-dynamodb "
     Default: "ops-import-s3-to-dynamodb-gluejob"
 
   DeleteDynamoDBTableFunctionName:
@@ -43,11 +43,11 @@ Parameters:
 
   StepFunctionRoleName:
     Type: String
-    Description: "The name of the Step Function role. For example: ops-step-function-role"
+    Description: "The name of the Step function role. For example: ops-step-function-role"
     Default: "ops-step-function-role"  
 
   DynamoDBBucketName:
-    Description: "The name of the DynamoDB bucket. For example: dynamodbexportglue123"
+    Description: "The name of the DynamoDb bucket. For example: dynamodbexportglue123"
     Type: String
     Default: "dynamodbexportglue123"
 
@@ -78,6 +78,7 @@ Resources:
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${CheckRestoreStatusFunctionName}
                   - !Sub arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBTableFunctionName}
+                  
               # Glue permissions
               - Effect: "Allow"
                 Action: 
@@ -88,6 +89,7 @@ Resources:
                   - !Sub arn:aws:glue:${AWS::Region}:${AWS::AccountId}:job/${DeleteDynamoDBDataGlueJobName}
                   - !Sub arn:aws:glue:${AWS::Region}:${AWS::AccountId}:job/${ImportS3ToDynamoDBGlueJobName}
 
+                  
   # Step Function State Machine
   StepFunction:
     Type: AWS::StepFunctions::StateMachine
@@ -101,11 +103,11 @@ Resources:
           "States": {
             "ProcessMultipleTables": {
               "Type": "Map",
-              "ItemsPath": "$.tablenames",
+              "ItemsPath": "$.tables",
               "MaxConcurrency": 2,
               "ResultPath": "$.backup",
               "ItemSelector": {
-                "tablenames.$": "$$.Map.Item.Value"
+                "tablename.$": "$$.Map.Item.Value"
               },
               "Iterator": {
                 "StartAt": "FindLatestBackup",
@@ -114,7 +116,7 @@ Resources:
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}",
                     "Parameters": {
-                      "table_name.$": "$.tablenames"
+                      "table_name.$": "$.tablename"
                     },
                     "ResultPath": "$.backup",
                     "Next": "RestoreBackup"
@@ -123,7 +125,7 @@ Resources:
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
                     "Parameters": {
-                      "table_name.$": "$.tablenames",
+                      "table_name.$": "$.tablename",
                       "backup_arn.$": "$.backup.latest_backup_arn"
                     },
                     "ResultPath": "$.restore",
@@ -205,7 +207,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${DeleteDynamoDBDataGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.tablenames"
+                        "--DYNAMODB_TABLE.$": "$.tablename"
                       }
                     },
                     "ResultPath": "$.delete",
@@ -253,7 +255,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${ImportS3ToDynamoDBGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.tablenames",
+                        "--DYNAMODB_TABLE.$": "$.tablename",
                         "--S3_BUCKET": "${DynamoDBBucketName}",
                         "--S3_KEY.$": "$.restore.file_name"
                       }
@@ -328,3 +330,5 @@ Outputs:
   StepFunctionArn:
     Description: "The ARN of the Step Function State Machine"
     Value: !Ref StepFunction
+
+
