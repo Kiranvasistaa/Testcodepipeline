@@ -116,6 +116,12 @@ Resources:
                     "Parameters": {
                         "table_name.$": "$.TABLE_NAME"
                     },
+                    "InputPath": "$",
+                    "ResultSelector": {
+                    "statusCode.$": "$.Payload.statusCode",
+                    "latest_backup_arn.$": "$.Payload.latest_backup_arn",
+                    "backup_creation_time.$": "$.Payload.backup_creation_time"
+                    },
                     "ResultPath": "$.backup",
                     "Next": "RestoreBackup"
                   },
@@ -126,6 +132,15 @@ Resources:
                         "table_name.$": "$.TABLE_NAME",
                         "backup_arn.$": "$.backup.latest_backup_arn"
                     },
+                    "InputPath": "$",
+                    "ResultSelector": {
+                    "statusCode.$": "$.Payload.statusCode",
+                    "body.$": "$.Payload.body",
+                    "restore_table_arn.$": "$.Payload.restore_table_arn",
+                    "restore_table_name.$": "$.Payload.restore_table_name",
+                    "file_name.$": "$.Payload.file_name",
+                    "backup_arn.$": "$.Payload.backup_arn"
+                  },
                     "ResultPath": "$.restore",
                     "Next": "CheckRestoreStatus"
                   },
@@ -135,6 +150,12 @@ Resources:
                     "Parameters": {
                         "restored_table_name.$": "$.restore.restore_table_name"
                     },
+                    "InputPath": "$",
+                    "ResultSelector": {
+                    "status.$": "$.Payload.status",
+                    "restored_table_name.$": "$.Payload.restored_table_name",
+                    "message.$": "$.Payload.message"
+                  },
                     "ResultPath": "$.restoreStatus",
                     "Next": "IsTableActive"
                   },
