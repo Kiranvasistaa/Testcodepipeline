@@ -205,7 +205,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${DeleteDynamoDBDataGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME",
+                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME"
                       }
                     },
                     "ResultPath": "$.delete",
