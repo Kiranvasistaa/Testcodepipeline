@@ -67,7 +67,7 @@ Parameters:
 
   GlueExportmaxconcuruns:
     Type: Number
-    Default: 1
+    Default: 2
     Description: Maximum concurrent runs for Glue job
 
   GlueExportworkertype:
