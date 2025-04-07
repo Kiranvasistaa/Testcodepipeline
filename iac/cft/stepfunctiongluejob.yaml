@@ -10,7 +10,7 @@ Parameters:
   StateMachineName:
     Type: String
     Description: "The name of the Step Function State Machine. For example: ops-Dynamodb-backup-restoration"
-    Default: "ops-Dynamodb-backup-restoration"
+    Default: "ops-dynamodb-backup-restoration"
 
   FindLatestBackupFunctionName:
     Type: String
