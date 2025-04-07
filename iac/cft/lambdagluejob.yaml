@@ -5,6 +5,7 @@ Description: >
     and data imports from S3. 
 
 Parameters:
+
   DynamoDBBucketName:
     Type: String
     Description: "The name of the S3 bucket to use for exporting DynamoDB data. For example: dynamodbexportdata"
@@ -182,7 +183,7 @@ Resources:
 
           def lambda_handler(event, context):
               try:
-                  table_name = event.get('table_name')
+                  table_name = event.get('TABLE_NAME')
 
                   # Get list of backups for the given table
                   response = dynamodb.list_backups(TableName=table_name)
@@ -230,11 +231,9 @@ Resources:
           dynamodb = boto3.client('dynamodb')
 
           def lambda_handler(event, context):
-              print("🔍 Received event:", json.dumps(event))
-
               try:
                   backup_arn = event.get('backup_arn')
-                  original_table_name = event.get('table_name')
+                  original_table_name = event.get('TABLE_NAME')
                   new_table_name = f"{original_table_name}_temp"
 
                   response = dynamodb.restore_table_from_backup(
@@ -380,19 +379,20 @@ Resources:
       Code:
         ZipFile: |
           import boto3
+
           dynamodb = boto3.client('dynamodb')
 
           def lambda_handler(event, context):
               try:
                   # Fetch table name from event input
-                  table_name = event.get('table_name')
+                  TABLE_NAME = event['TABLE_NAME']
 
                   # Delete the DynamoDB table
-                  response = dynamodb.delete_table(TableName=table_name)
+                  response = dynamodb.delete_table(TableName=TABLE_NAME)
                   
                   return {
                       "statusCode": 200,
-                      "body": f"Table {table_name} deleted successfully!"
+                      "body": f"Table {TABLE_NAME} deleted successfully!"
                   }
               except Exception as e:
                   return {
@@ -402,6 +402,7 @@ Resources:
 
       Runtime: "python3.12"
       Timeout: 900
+
       
 Outputs:
   FindLatestBackupFunctionName:

@@ -6,6 +6,12 @@ Description: >
     exporting data to S3, and importing data back into DynamoDB
 
 Parameters:
+
+  StateMachineName:
+    Type: String
+    Description: "The name of the Step Function State Machine. For example: ops-Dynamodb-backup-restoration"
+    Default: "ops-Dynamodb-backup-restoration"
+
   FindLatestBackupFunctionName:
     Type: String
     Description: "The name of the Lambda function to find the latest DynamoDB backup. For example: ops-find-latest-backup"
@@ -94,7 +100,7 @@ Resources:
   StepFunction:
     Type: AWS::StepFunctions::StateMachine
     Properties:
-      StateMachineName: "OPSDynamoDBBackupRestoration"
+      StateMachineName: !Ref StateMachineName
       RoleArn: !GetAtt StepFunctionRole.Arn
       DefinitionString: !Sub |
         {
@@ -103,11 +109,11 @@ Resources:
           "States": {
             "ProcessMultipleTables": {
               "Type": "Map",
-              "ItemsPath": "$.tables",
+              "ItemsPath": "$.DynamoDBTableNames",
               "MaxConcurrency": 2,
               "ResultPath": "$.backup",
               "ItemSelector": {
-                "tablename.$": "$$.Map.Item.Value"
+                "TABLE_NAME.$": "$$.Map.Item.Value"
               },
               "Iterator": {
                 "StartAt": "FindLatestBackup",
@@ -116,7 +122,7 @@ Resources:
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${FindLatestBackupFunctionName}",
                     "Parameters": {
-                      "table_name.$": "$.tablename"
+                      "TABLE_NAME.$": "$.TABLE_NAME"
                     },
                     "ResultPath": "$.backup",
                     "Next": "RestoreBackup"
@@ -125,7 +131,7 @@ Resources:
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${RestoreBackupFunctionName}",
                     "Parameters": {
-                      "table_name.$": "$.tablename",
+                      "TABLE_NAME.$": "$.TABLE_NAME",
                       "backup_arn.$": "$.backup.latest_backup_arn"
                     },
                     "ResultPath": "$.restore",
@@ -207,7 +213,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${DeleteDynamoDBDataGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.tablename"
+                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME"
                       }
                     },
                     "ResultPath": "$.delete",
@@ -255,7 +261,7 @@ Resources:
                     "Parameters": {
                       "JobName": "${ImportS3ToDynamoDBGlueJobName}",
                       "Arguments": {
-                        "--DYNAMODB_TABLE.$": "$.tablename",
+                        "--DYNAMODB_TABLE.$": "$.TABLE_NAME",
                         "--S3_BUCKET": "${DynamoDBBucketName}",
                         "--S3_KEY.$": "$.restore.file_name"
                       }
@@ -303,7 +309,7 @@ Resources:
                     "Type": "Task",
                     "Resource": "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:${DeleteDynamoDBTableFunctionName}",
                     "Parameters": {
-                      "table_name.$": "$.restore.restore_table_name"
+                      "TABLE_NAME.$": "$.restore.restore_table_name"
                     },
                     "Next": "SucceedState"
                   },
