@@ -13,7 +13,7 @@ Parameters:
   Timestamp:
     Type: String
     Description: "Timestamp in format YYYY-MM-DDTHH:MM:SS"
-    Default: "2025-04-8T15:07:00"
+    Default: "2025-04-08T15:10:00"
     
   StepFunctionArn:
     Type: String
