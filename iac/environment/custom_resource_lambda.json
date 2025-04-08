@@ -5,7 +5,7 @@
       "LambdaExecutionRoleName": "ops-custom-lambda-execution-role",
       "DynamoDBBucketName": "dynamodbexportglue123",
       "DynamoDBTableNames": "xpto1,xpto,xpto2",
-      "Timestamp": "2025-04-8T15:22:10",
+      "Timestamp": "2025-04-8T15:33:10",
       "StepFunctionArn": "arn:aws:states:us-east-1:242201284242:stateMachine:ops-dynamodb-backup-restoration"
   }
 }
